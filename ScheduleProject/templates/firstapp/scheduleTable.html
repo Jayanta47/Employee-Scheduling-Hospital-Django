@@ -1,0 +1,89 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <title> Scheduling Page </title>
+
+  </head>
+  <body>
+    <div class="jumbotron" align = "center">
+        <h1>Schedule Employee Worktime</h1>
+    </div>
+
+    <div class="form-group" align= 'left' width = '100px' >
+    <label class = "control-label col-sm-2" for="empID">Employee ID: </label>
+        <div class="form-group col-sm-10">
+          <input type="text" class="form-control" id="empID" name="lname" value="" placeholder="Type employee Id e.g. 210**"><br>
+        </div>
+
+      <div class="col-sm-10">
+        <label for="name" >Name: </label> <label for="" id = "emp_name"></label><br>
+        <label for="work">Designation:</label> <label for="" id = "job"></label><br>
+      </div>
+    </div>
+
+
+    <h3 align = 'center'>Schedule Table</h3>
+    <table>
+      <thead>
+        <th>Date</th>
+        <th>Shift</th>
+        <th>Time</th>
+      </thead>
+      <tbody>
+        <tr>
+          <td><select class="" name="date select">
+            <option value="today">Today</option>
+            <option value="tomorrow">Tomorrow</option>
+          </select></td>
+          <td><select class="" name="shift choose">
+              <<option value="1">1</option>
+              <<option value="2">2</option>
+          </select></td>
+          <td><label for="">All iz well</label></td>
+        </tr>
+      </tbody>
+    </table>
+
+
+   <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script>
+      // load the employee id
+    $("#empID").change(function() {
+        var url = 'data1'
+        var empId = $(this).val();
+        
+        $.ajax({
+            url : url,
+            data : {
+                'empId' : empId
+            },
+            dataType : 'json',
+            success: function(data) {
+                var name = "";
+                var job = "";
+                if(data.length === 0){
+                    name = "Not found(Error 404)";
+                    job = "Not found(Error 404)";
+                }
+                else {
+                    name = data[0].firstName + " " + data[0].lastName;
+                    job = data[0].job;
+                }
+                $("#emp_name").empty();
+                $("#job").empty();
+                $("#emp_name").append(name);
+                $("#job").append(job);
+            }
+        })
+
+    });
+
+
+</script>
+
+  </body>
+</html>

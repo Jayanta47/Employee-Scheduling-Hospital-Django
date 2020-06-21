@@ -1,0 +1,66 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+
+      <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+    <link rel="stylesheet" href="{% static 'firstapp/js2/appForm.js'%}">
+    <title>Fill up</title>
+  </head>
+  <body>
+
+
+  <label class = "control-label col-sm-2" for="type_select">Select Type: </label>
+        <div class="form-group col-sm-10">
+          <select class="form-control" id = "type_select" name="select" >
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+          </select>
+        </div>
+
+  <label class = "control-label col-sm-2" for="doc_select">Select Doctor: </label>
+        <div class="form-group col-sm-10">
+
+          <select class = "form-control" id ="topic" >
+                <option value="0">---Select---</option>
+          </select>
+
+        </div>
+
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <script>
+    $("#type_select").change(function () {
+      var url = 'input';
+      var DocId = $(this).val();
+      $.ajax({
+        url: url,
+
+        success: function (data) {
+            console.log(data)
+
+            var len;
+            var object = JSON.parse(data)
+            console.log(object)
+
+            $("#topic").empty();
+            $("#topic").append("<option value=0>--Select--</option>");
+            for(var i =0,len = object.length;i<len;i++ ){
+                console.log(object[i].id +": "+object[i].name);
+                var key = object[i].id
+                var value = object[i].name
+                $("#topic").append("<option value='" +key+"'>"+value+"</option>");
+            }
+
+        }
+
+      });
+
+    });
+  </script>
+
+  </body>
+</html>
