@@ -16,40 +16,69 @@
     <div class="form-group" align= 'left' width = '100px' >
     <label class = "control-label col-sm-2" for="empID">Employee ID: </label>
         <div class="form-group col-sm-10">
-          <input type="text" class="form-control" id="empID" name="lname" value="" placeholder="Type employee Id e.g. 210**"><br>
+          <input type="text" class="form-control" id="empID" value="" placeholder="Type employee Id e.g. 210**"><br>
         </div>
 
       <div class="col-sm-10">
         <label for="name" >Name: </label> <label for="" id = "emp_name"></label><br>
         <label for="work">Designation:</label> <label for="" id = "job"></label><br>
+          <input type="button" id ="show_table_button" value="View Schedule Table">
       </div>
     </div>
 
 
-    <h3 align = 'center'>Schedule Table</h3>
-    <table>
+    <h3 align = 'center'><b><u>Schedule Table</u></b></h3>
+
+
+    <form class="form-creation" action="" method="post" id = "datetimeForm"  novalidate>
+      {% csrf_token %}
+
+      <div class="form-group" align= 'left' width = '100px' >
+        <label class="control-label col-sm-2" >Pick Date: </label>
+        <div class="col-sm-10">
+          <input type="date" class="form-control" id="next_date">
+        </div>
+
+        <label class="control-label col-sm-2" >Pick Time Slot: </label>
+        <div class="col-sm-10">
+          <select class="form-control" id="time_slot_pick">
+                <option value="">--Select--</option>
+                {% if time_slot != null %}
+                    {% for time in time_slot%}
+                        <option value="{{ time.timeId }}">{{ time.category }}</option>
+                    {% endfor %}
+                {% endif %}
+          </select>
+        </div>
+        <br>
+        <div class="col-sm-10">
+            <input type="button" id="add_schedule" value="Add to Table">
+        </div>
+
+      </div>
+    </form>
+
+
+    <table class="table">
       <thead>
+        <th>Select</th>
+        <th>Schedule ID</th>
         <th>Date</th>
         <th>Shift</th>
-        <th>Time</th>
+        <th>Time Duration</th>
       </thead>
-      <tbody>
-        <tr>
-          <td><select class="" name="date select">
-            <option value="today">Today</option>
-            <option value="tomorrow">Tomorrow</option>
-          </select></td>
-          <td><select class="" name="shift choose">
-              <<option value="1">1</option>
-              <<option value="2">2</option>
-          </select></td>
-          <td><label for="">All iz well</label></td>
-        </tr>
+      <tbody id = "table_body">
+
       </tbody>
     </table>
 
+    <div class="form-group col-sm-10">
+        <input type="button"  id="delete_row" value="Delete Rows" ><br>
+    </div>
 
-   <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+
     <script>
       // load the employee id
     $("#empID").change(function() {
@@ -82,8 +111,119 @@
 
     });
 
+    </script>
 
-</script>
+    <script>
+        // loads schedule table rows
+        $("#show_table_button").click(function () {
+            var url = 'data_schedule_prev'
+            var empId = $("#empID").val();
+            $.ajax({
+                url : url,
+                data : {
+                    'empId' : empId
+                },
+                dataType: 'json',
+                success: function (data) {
+                    var id = "";
+                    var date = "";
+                    var time_category = "";
+                    var duration = "";
+                    $("#table_body").empty();
+                    if (data.length > 0) {
+                        for(var i = 0; i < data.length; i++) {
+                            id = data[i].Id;
+                            date = data[i].date_full;
+                            time_category = data[i].shift;
+                            duration = data[i].start_time + " - " + data[i].end_time;
+                            var markup = "<tr class='rows'><td><input type = 'checkbox' name='record'></td>"
+                                + "<td class='id'>"+id+"</td><td>"+date+"</td><td>"
+                                +time_category+"</td><td>"+duration+"</td></tr>";
+                            $("#table_body").append(markup);
+                        }
+                    }
+
+                }
+            })
+        })
+    </script>
+
+    <script>
+        $("#next_date").change(function () {
+            console.log($(this).val());
+        });
+
+    </script>
+
+    <script>
+        $("#time_slot_pick").change(function () {
+            console.log($(this).val());
+        });
+    </script>
+
+    <script>
+        // adds the schedule to the schedule table as a new row
+        $("#add_schedule").click(function () {
+            var url = 'add_data'
+            var date = $("#next_date").val();
+            var timeslot = $("#time_slot_pick").val();
+            if (date == "" || timeslot == ""){
+                alert("The boxes are empty");
+            }
+            else {
+                $.ajax({
+                    url : url,
+                    data : {
+                        "empId" : $("#empID").val(),
+                        "date" : date,
+                        "time_slot": timeslot
+                    },
+                    dataType: 'json',
+                    success : function (data) {
+                        //console.log(data);
+                        if(data == "Done") {
+                            $("#show_table_button").trigger("click");
+                            $("#next_date").empty();
+                        }
+                        else {
+                            alert("The Designated Schedule already exists")
+                        }
+                    }
+                });
+
+            }
+
+        })
+    </script>
+
+    <script>
+        // deletes the selected rows
+        $("#delete_row").click(function () {
+            if(confirm("Are you sure you want to delete these entry(s)?"))
+            {
+                var ids = [];
+                $("tr.rows").each(function () {
+                    if($(this).find('input[name="record"]').is(":checked")) {
+                        var Id = $(this).find(".id").html();
+                        ids.push(Id);
+                        $(this).remove()
+                    }
+                });
+                if(ids.length > 0) {
+                    var url = 'delete_schedule';
+                    $.ajax({
+                        url : url,
+                        data : {
+                            'list' : JSON.stringify(ids)
+                        },
+                        dataType: 'json',
+                    })
+                }
+            }
+
+        });
+    </script>
+
 
   </body>
 </html>
